@@ -1,7 +1,10 @@
 require 'rake'
 require 'rspec/core/rake_task'
+require 'faker'
 require_relative 'db/config'
 require_relative 'lib/students_importer'
+require_relative 'app/models/teacher'
+require_relative 'app/models/student'
 
 
 desc "create the database"
@@ -26,11 +29,35 @@ end
 desc "populate the test database with sample data"
 task "db:populate" do
   StudentsImporter.import
+  9.times do 
+    Teacher.new(:first_name => Faker::Name.first_name, :last_name => Faker::Name.last_name, :email => Faker::Internet.email, :phone => Faker::PhoneNumber.phone_number).save
+  end
+  # Student.all.each { |student| student.update_attributes(teacher_id: rand(9)+1)}
 end
 
 desc 'Retrieves the current schema version number'
 task "db:version" do
   puts "Current version: #{ActiveRecord::Migrator.current_version}"
+end
+
+desc "generate a new migration"
+task "db:generate:migration", :name do |t, args|
+  timestamp = Time.now.strftime('%Y%m%d%H%M%S')
+  name = args[:name]
+  # touch "#{timestamp}_#{name}.rb"a
+  unless File.exists?("#{timestamp}_#{name}.rb")
+    File.open("db/migrate/#{timestamp}_create_#{name}.rb", 'w') do |f|
+      f.write("class Create#{name.capitalize} < ActiveRecord::Migration
+  def change
+    create_table :#{name} do |t|
+
+      t.timestamps
+
+    end
+  end
+end")
+    end
+  end
 end
 
 desc "Run the specs"
