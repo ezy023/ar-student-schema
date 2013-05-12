@@ -60,6 +60,18 @@ end")
   end
 end
 
+desc "Runs drop, create, migrate, and populate to set up db"
+task "db:setup" do
+  Rake::Task['db:drop'].execute
+  puts "dropped"
+  Rake::Task['db:create'].execute
+  puts "created"
+  Rake::Task['db:migrate'].execute
+  puts "migrated"
+  Rake::Task['db:populate'].execute
+  puts "populated"
+end
+
 desc "Run the specs"
 RSpec::Core::RakeTask.new(:specs)
 
